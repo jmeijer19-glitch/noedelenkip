@@ -28,6 +28,21 @@ function playerAttack() {
         SFX.enemyDie();
         checkLevelUp();
 
+        // Drop coins
+        const coinDrop = 3 + Math.floor(Math.random() * 7); // 3-9 coins
+        player.coins += coinDrop;
+        SFX.coin();
+        // Spawn coin particles
+        for (let ci = 0; ci < Math.min(coinDrop, 5); ci++) {
+          coinParticles.push({
+            x: e.x + (Math.random()-0.5)*20,
+            y: e.y - 10,
+            vy: -2 - Math.random()*2,
+            life: 40 + Math.floor(Math.random()*20),
+            text: ci === 0 ? `+${coinDrop}` : null,
+          });
+        }
+
         // Chance to drop a gear if fix_invention mission active
         if (missions.fix_invention.state === 'started') {
           const closestGear = GEAR_POSITIONS.find(g => !g.collected && Math.hypot(g.x*T+16 - e.x, g.y*T+16 - e.y) < 8*T);

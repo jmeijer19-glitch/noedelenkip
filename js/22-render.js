@@ -65,6 +65,30 @@ function drawWorld() {
     });
   }
 
+  // Draw hatching eggs in coop
+  hatchingEggs.forEach(egg => {
+    const eggType = EGG_TYPES[egg.type];
+    const now = Date.now();
+    const elapsed = (now - egg.startTime) / 1000;
+    const progress = Math.min(1, elapsed / egg.hatchTime);
+    const coopX = 39 * T + (hatchingEggs.indexOf(egg) - hatchingEggs.length/2) * 16;
+    const coopY = 17 * T + 10;
+    // Draw egg
+    const wobble = progress > 0.8 ? Math.sin(gameTick * 0.3) * 2 : 0;
+    ctx.fillStyle = eggType.color;
+    ctx.beginPath();
+    ctx.ellipse(coopX + wobble, coopY, 5, 7, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Progress bar under egg
+    ctx.fillStyle = '#333';
+    ctx.fillRect(coopX - 8, coopY + 9, 16, 3);
+    ctx.fillStyle = progress < 0.5 ? '#ffa500' : '#4a4';
+    ctx.fillRect(coopX - 8, coopY + 9, 16 * progress, 3);
+  });
+
   // Collect all sprites to sort by Y
   const sprites = [];
   sprites.push({ type: 'player', y: player.y });
@@ -72,6 +96,8 @@ function drawWorld() {
   if (moos.met || (!moos.met && player.y > 24*T)) sprites.push({ type: 'moos', y: moos.y });
   npcs.forEach((npc, i) => sprites.push({ type: 'npc', y: npc.y, idx: i }));
   enemies.forEach((e, i) => { if (e.state !== 'dead' || e.deadTimer > 0) sprites.push({ type: 'enemy', y: e.y, idx: i }); });
+  // Add coop chickens to sprite list
+  hatchedChickens.forEach((chick, i) => sprites.push({ type: 'coopchicken', y: chick.y, idx: i }));
 
   sprites.sort((a,b) => a.y - b.y);
 
@@ -147,6 +173,9 @@ function drawWorld() {
       drawNPC(npc);
     } else if (s.type === 'enemy') {
       drawEnemy(enemies[s.idx]);
+    } else if (s.type === 'coopchicken') {
+      const chick = hatchedChickens[s.idx];
+      drawCoopChicken(chick.x, chick.y, chick.dir, chick.frame * 3, chick.color, chick.type === 'gouden_ei');
     }
   });
 
@@ -214,6 +243,29 @@ function drawWorld() {
       ctx.fill();
     }
   }
+
+  // Coin particles (world space)
+  coinParticles.forEach(p => {
+    const alpha = Math.min(1, p.life / 20);
+    ctx.globalAlpha = alpha;
+    // Coin circle
+    ctx.fillStyle = '#ffd700';
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#b8960a';
+    ctx.font = 'bold 5px monospace';
+    ctx.fillText('$', p.x-2, p.y+2);
+    // Floating text for first particle
+    if (p.text) {
+      ctx.fillStyle = '#ffd700';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.text, p.x, p.y - 8);
+      ctx.textAlign = 'left';
+    }
+    ctx.globalAlpha = 1;
+  });
 
   ctx.restore();
 
@@ -455,13 +507,24 @@ function drawHUD() {
   ctx.font = '9px monospace';
   ctx.fillText(`${player.hp}/${player.maxHp}`, 110, 31);
 
-  // Level + XP
+  // Level + XP + Coins
   ctx.fillStyle = C.uiBorder;
   ctx.font = '11px monospace';
   ctx.fillText(`Lv.${player.level}`, 68, 50);
   ctx.fillStyle = '#aaa';
   ctx.font = '10px monospace';
-  ctx.fillText(`XP:${player.xp}`, 120, 50);
+  ctx.fillText(`XP:${player.xp}`, 110, 50);
+  // Coin icon + count
+  ctx.fillStyle = '#ffd700';
+  ctx.beginPath();
+  ctx.arc(163, 47, 5, 0, Math.PI*2);
+  ctx.fill();
+  ctx.fillStyle = '#b8960a';
+  ctx.font = 'bold 6px monospace';
+  ctx.fillText('$', 161, 49);
+  ctx.fillStyle = '#ffd700';
+  ctx.font = '10px monospace';
+  ctx.fillText(`${player.coins}`, 172, 50);
 
   // Time of day
   ctx.fillStyle = 'rgba(255,255,255,0.6)';

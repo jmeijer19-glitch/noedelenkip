@@ -76,6 +76,11 @@ function updatePlayer() {
   checkGearPickup();
   // Mist system
   updateMist();
+  // Hatching eggs + coop chickens
+  updateHatching();
+  updateCoopChickens();
+  // Coin particles
+  updateCoinParticles();
 }
 
 // --- UPDATE KIP ---
@@ -221,6 +226,81 @@ function updateNPCs() {
       else npc.dir = ady > 0 ? 2 : 0;
     }
   });
+}
+
+// --- UPDATE HATCHING EGGS ---
+function updateHatching() {
+  const now = Date.now();
+  for (let i = hatchingEggs.length - 1; i >= 0; i--) {
+    const egg = hatchingEggs[i];
+    const elapsed = (now - egg.startTime) / 1000;
+    if (elapsed >= egg.hatchTime) {
+      // Egg has hatched! Create a chicken
+      const eggType = EGG_TYPES[egg.type];
+      const coopCenterX = 39 * T + 16;
+      const coopCenterY = 17 * T + 16;
+      hatchedChickens.push({
+        type: egg.type,
+        x: coopCenterX + (Math.random() - 0.5) * 3 * T,
+        y: coopCenterY + (Math.random() - 0.5) * 2 * T,
+        dir: Math.floor(Math.random() * 4),
+        frame: Math.random() * 100,
+        wanderAngle: Math.random() * Math.PI * 2,
+        wanderTimer: 0,
+        color: eggType.chickenColor,
+      });
+      hatchingEggs.splice(i, 1);
+      SFX.hatch();
+      setMissionBar(`Een ${eggType.name} is uitgebroed! Er loopt een nieuw kuiken in het hok!`);
+      setTimeout(() => { missionBarTarget = 0; }, 4000);
+      saveGame();
+    }
+  }
+}
+
+// --- UPDATE COOP CHICKENS (wandering) ---
+function updateCoopChickens() {
+  const coopCenterX = 39 * T + 16;
+  const coopCenterY = 17 * T + 16;
+  const coopRadius = 3 * T;
+
+  hatchedChickens.forEach(chick => {
+    chick.frame += 0.05;
+    chick.wanderTimer++;
+    if (chick.wanderTimer > 120 + Math.random() * 180) {
+      chick.wanderTimer = 0;
+      chick.wanderAngle += (Math.random() - 0.5) * 2;
+    }
+    // Wander slowly
+    const speed = 0.3;
+    const nx = chick.x + Math.cos(chick.wanderAngle) * speed;
+    const ny = chick.y + Math.sin(chick.wanderAngle) * speed;
+    // Stay within coop area
+    const distFromCenter = Math.hypot(nx - coopCenterX, ny - coopCenterY);
+    if (distFromCenter < coopRadius) {
+      chick.x = nx;
+      chick.y = ny;
+    } else {
+      // Turn around
+      chick.wanderAngle = Math.atan2(coopCenterY - chick.y, coopCenterX - chick.x) + (Math.random() - 0.5) * 1;
+    }
+    // Update direction
+    const cos = Math.cos(chick.wanderAngle);
+    const sin = Math.sin(chick.wanderAngle);
+    if (Math.abs(cos) > Math.abs(sin)) chick.dir = cos > 0 ? 1 : 3;
+    else chick.dir = sin > 0 ? 2 : 0;
+  });
+}
+
+// --- UPDATE COIN PARTICLES ---
+function updateCoinParticles() {
+  for (let i = coinParticles.length - 1; i >= 0; i--) {
+    const p = coinParticles[i];
+    p.y += p.vy;
+    p.vy += 0.05;
+    p.life--;
+    if (p.life <= 0) coinParticles.splice(i, 1);
+  }
 }
 
 // --- CAMERA ---

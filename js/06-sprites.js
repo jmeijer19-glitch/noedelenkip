@@ -153,6 +153,70 @@ function drawKip(x, y, dir, frame, scale=1, flutter=false) {
   ctx.restore();
 }
 
+// --- DRAW COOP CHICKEN (small chickens in the coop) ---
+function drawCoopChicken(x, y, dir, frame, chickenColor, isGolden) {
+  const s = 0.6; // smaller than De Kip
+  ctx.save();
+  ctx.translate(Math.floor(x), Math.floor(y));
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(0, 6*s, 5*s, 2*s, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  const bob = Math.sin(frame * 0.5) * s;
+
+  // Legs
+  ctx.fillStyle = '#d4a020';
+  ctx.fillRect(-2*s, 3*s+bob, 1.5*s, 3*s);
+  ctx.fillRect(0.5*s, 3*s+bob, 1.5*s, 3*s);
+
+  // Body
+  ctx.fillStyle = chickenColor;
+  ctx.beginPath();
+  ctx.ellipse(0, 0+bob, 5*s, 4*s, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Wings
+  ctx.fillStyle = chickenColor === '#ffd700' ? '#e6c200' : '#d8d0c0';
+  ctx.fillRect(-5*s, -0.5*s+bob, 2*s, 3*s);
+  ctx.fillRect(3*s, -0.5*s+bob, 2*s, 3*s);
+
+  // Head
+  ctx.fillStyle = chickenColor;
+  ctx.beginPath();
+  ctx.ellipse(0, -5*s+bob, 3.5*s, 3.5*s, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Comb
+  ctx.fillStyle = '#cc3333';
+  ctx.fillRect(-1*s, -9*s+bob, 1.5*s, 2*s);
+  ctx.fillRect(0.5*s, -10*s+bob, 1.5*s, 3*s);
+
+  // Beak
+  ctx.fillStyle = '#dda030';
+  ctx.fillRect(2*s, -6*s+bob, 3*s, 2*s);
+
+  // Eye
+  ctx.fillStyle = '#222';
+  ctx.fillRect(1*s, -6.5*s+bob, 1.5*s, 1.5*s);
+
+  // Golden glitter effect
+  if (isGolden) {
+    const sparkle = Math.sin(frame * 0.3 + x) * 0.5 + 0.5;
+    ctx.fillStyle = `rgba(255,255,150,${sparkle * 0.6})`;
+    ctx.beginPath();
+    ctx.arc(Math.sin(frame*0.7)*3, -3+bob+Math.cos(frame*0.5)*2, 2, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(Math.cos(frame*0.4)*4, bob+Math.sin(frame*0.6)*3, 1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
+
 // --- DRAW MOOS (Friese Stabij) ---
 function drawMoos(x, y, dir, frame, scale=1) {
   const s = scale;

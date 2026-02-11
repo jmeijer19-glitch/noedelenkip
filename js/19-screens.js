@@ -163,7 +163,7 @@ function drawTitleScreen() {
   ctx.textAlign = 'left';
   ctx.fillStyle = 'rgba(255,255,255,0.3)';
   ctx.font = '12px monospace';
-  ctx.fillText('v2.0 - Made with HTML5 Canvas', 10, h-10);
+  ctx.fillText('v4.0 - Made with HTML5 Canvas', 10, h-10);
 
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
   ctx.font = '13px monospace';
@@ -218,9 +218,12 @@ function updateTitle() {
 function startNewGame() {
   player.x = 8*T+16; player.y = 10*T+16;
   player.dir = 2; player.hp = 100; player.maxHp = 100; player.xp = 0; player.level = 1;
-  player.inventory = []; player.talkedTo = {};
+  player.inventory = []; player.talkedTo = {}; player.coins = 0;
   player.moving = false; player.frame = 0; player.speed = 2.5;
   player.attackCooldown = 0; player.attackAnim = 0; player.hurtTimer = 0;
+  hatchingEggs = [];
+  hatchedChickens = [];
+  coinParticles = [];
   kip.x = player.x + 32; kip.y = player.y;
   kip.flutter = false;
   // Reset all missions
@@ -314,7 +317,7 @@ function drawCredits() {
   ctx.fillText('CREDITS', w/2, 80);
   ctx.font = '16px monospace';
   ctx.fillStyle = '#ccc';
-  ctx.fillText('NOEDELS & DE KIP v3', w/2, 140);
+  ctx.fillText('NOEDELS & DE KIP v4', w/2, 140);
   ctx.fillText('Avonturen in het Dorp', w/2, 165);
   ctx.font = '14px monospace';
   ctx.fillStyle = '#aaa';
@@ -340,6 +343,16 @@ function drawCredits() {
 // --- CHANGELOG SCREEN ---
 let changelogScroll = 0;
 const CHANGELOG = [
+  { version: 'v4.0', date: '2026-02-11', items: [
+    'Munten-systeem: versla vijanden voor munten!',
+    'Boer Henk verkoopt eieren na de Gouden Ei missie',
+    'Drie ei-types: Kippenei, Groot Broedei, Gouden Broedei',
+    'Eieren uitbroeden in het kippenhok met timer',
+    'Uitgebroede kippen lopen rond in het hok',
+    'Gouden kippen hebben een glitter-effect',
+    'Dialog keuze-systeem (pijltjes + enter)',
+    'Missies geven nu ook munten als beloning',
+  ]},
   { version: 'v3.0', date: '2026-02-07', items: [
     'Ei zoeken: proximity-based (dichtbij komen + actieknop)',
     'Zoekgebied: pulserende cirkel i.p.v. exacte pijl',

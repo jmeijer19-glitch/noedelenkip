@@ -29,6 +29,10 @@ const SFX = {
   attack: () => { playTone(350, 0.05, 'square', 0.07); setTimeout(()=>playTone(200, 0.08, 'sawtooth', 0.06), 50); },
   enemyDie: () => { playTone(400,0.1); setTimeout(()=>playTone(300,0.1),100); setTimeout(()=>playTone(200,0.15),200); },
   levelUp: () => { [440,550,660,880,1100].forEach((f,i)=>setTimeout(()=>playTone(f,0.15,'square',0.08),i*100)); },
+  coin: () => { playTone(800,0.06,'square',0.06); setTimeout(()=>playTone(1200,0.08,'square',0.05),60); },
+  hatch: () => { [500,600,700,800,900].forEach((f,i)=>setTimeout(()=>playTone(f,0.12,'triangle',0.07),i*80)); },
+  purchase: () => { playTone(600,0.08); setTimeout(()=>playTone(800,0.08),80); setTimeout(()=>playTone(1000,0.1),160); },
+  error: () => { playTone(200,0.15,'sawtooth',0.05); setTimeout(()=>playTone(150,0.2,'sawtooth',0.04),150); },
 };
 
 // --- BACKGROUND MUSIC ---

@@ -19,7 +19,22 @@ const player = {
   hurtTimer: 0,
   fishCount: 0,
   gearsFound: 0,
+  coins: 0,
 };
+
+// --- EI-TYPES ---
+const EGG_TYPES = {
+  kippenei:    { name: 'Kippenei',       cost: 5,  hatchTime: 30,  color: '#f5e6c8', chickenColor: '#e8e0d0', label: 'Gewoon' },
+  groot_ei:    { name: 'Groot Broedei',   cost: 12, hatchTime: 60,  color: '#c8b896', chickenColor: '#d4c4a0', label: 'Groot' },
+  gouden_ei:   { name: 'Gouden Broedei',  cost: 25, hatchTime: 120, color: '#ffd700', chickenColor: '#ffd700', label: 'Gouden' },
+};
+
+// --- HATCHING & CHICKENS ---
+let hatchingEggs = [];   // { type: 'kippenei', startTime: Date.now(), hatchTime: 30 }
+let hatchedChickens = []; // { type: 'kippenei', x, y, dir, frame, wanderAngle, color }
+
+// Coin float particles (for visual feedback)
+let coinParticles = [];
 
 const kip = {
   x: 8*T+48, y: 10*T+16,

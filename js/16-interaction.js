@@ -47,6 +47,7 @@ function interactWithNPC(npc) {
     m.catch_fish.state = 'completed';
     SFX.missionComplete();
     player.xp += 40;
+    player.coins += 25;
     player.inventory.push('Vishengel');
     startDialog(npc.missionDialog['catch_fish'], () => {
       setMissionBar('Missie Voltooid: De Goud-Baars Jacht!');
@@ -82,6 +83,7 @@ function interactWithNPC(npc) {
     m.fix_invention.state = 'completed';
     SFX.missionComplete();
     player.xp += 60;
+    player.coins += 30;
     player.speed = 3.0; // Speed boost!
     player.inventory.push('Snelheids-Schoenen');
     startDialog(npc.missionDialog['fix_invention'], () => {
@@ -118,6 +120,7 @@ function interactWithNPC(npc) {
     m.recipe_search.state = 'completed';
     SFX.missionComplete();
     player.xp += 80;
+    player.coins += 40;
     player.inventory.push('Noedelbrood');
     player.maxHp = 150;
     player.hp = 150;
@@ -129,8 +132,98 @@ function interactWithNPC(npc) {
     return;
   }
 
+  // Boer Henk egg shop (after golden egg mission completed)
+  if (npc.id === 'boer' && m.golden_egg.state === 'completed') {
+    openBoerHenkShop();
+    return;
+  }
+
   // Default dialog
   startDialog(npc.defaultDialog);
+}
+
+// --- BOER HENK EGG SHOP ---
+function openBoerHenkShop() {
+  function makeShopChoices() {
+    return {
+      speaker: 'Boer Henk', text: 'Wat wil je kopen? (Je hebt ' + player.coins + ' munten)',
+      choices: [
+        { label: 'Kippenei (gewoon)', cost: EGG_TYPES.kippenei.cost, action: () => buyEgg('kippenei') },
+        { label: 'Groot Broedei', cost: EGG_TYPES.groot_ei.cost, action: () => buyEgg('groot_ei') },
+        { label: 'Gouden Broedei', cost: EGG_TYPES.gouden_ei.cost, action: () => buyEgg('gouden_ei') },
+        { label: 'Nee, bedankt', action: () => {} },
+      ]
+    };
+  }
+
+  startDialog([
+    { speaker: 'Boer Henk', text: 'Hé Noedels! Wil je eieren kopen? Ik heb verse broedeitjes!' },
+    makeShopChoices(),
+  ]);
+}
+
+function buyEgg(eggType) {
+  const egg = EGG_TYPES[eggType];
+  if (player.coins >= egg.cost) {
+    player.coins -= egg.cost;
+    player.inventory.push(egg.name);
+    SFX.purchase();
+    // Continue dialog with success message
+    dialogQueue.splice(dialogIndex, 0,
+      { speaker: 'Boer Henk', text: `Alsjeblieft! Een ${egg.name}! Breng het naar het kippenhok om het uit te broeden.` },
+      { speaker: 'Noedels', text: `+1 ${egg.name}! Ik breng het naar het hok.` },
+    );
+  } else {
+    SFX.error();
+    dialogQueue.splice(dialogIndex, 0,
+      { speaker: 'Boer Henk', text: `Je hebt niet genoeg munten! Een ${egg.name} kost ${egg.cost} munten.` },
+      { speaker: 'Noedels', text: 'Hmm, ik moet eerst meer vijanden verslaan voor munten.' },
+    );
+  }
+}
+
+// --- COOP EGG PLACEMENT ---
+function openCoopEggPlacement(eggItems) {
+  // Build choices from eggs in inventory
+  const choices = [];
+  const eggCounts = {};
+  eggItems.forEach(item => { eggCounts[item] = (eggCounts[item] || 0) + 1; });
+  for (const [name, count] of Object.entries(eggCounts)) {
+    const typeKey = Object.keys(EGG_TYPES).find(k => EGG_TYPES[k].name === name);
+    if (typeKey) {
+      const egg = EGG_TYPES[typeKey];
+      choices.push({
+        label: `${name} (${count}x) - ${egg.hatchTime}s broedtijd`,
+        action: () => placeEggInCoop(typeKey, name),
+      });
+    }
+  }
+  choices.push({ label: 'Niets plaatsen', action: () => {} });
+
+  startDialog([
+    { speaker: 'Noedels', text: `Het kippenhok! Welk ei wil ik hier uitbroeden?` },
+    { speaker: 'Noedels', text: 'Kies een ei om te plaatsen:', choices },
+  ]);
+}
+
+function placeEggInCoop(typeKey, itemName) {
+  // Remove egg from inventory
+  const idx = player.inventory.indexOf(itemName);
+  if (idx >= 0) {
+    player.inventory.splice(idx, 1);
+    const egg = EGG_TYPES[typeKey];
+    hatchingEggs.push({
+      type: typeKey,
+      startTime: Date.now(),
+      hatchTime: egg.hatchTime,
+    });
+    SFX.pickup();
+    dialogQueue.splice(dialogIndex, 0,
+      { speaker: 'Noedels', text: `${egg.name} geplaatst! Over ${egg.hatchTime} seconden komt er een kuiken uit!` },
+      { speaker: 'De Kip', text: '*tok tok tok!*' },
+    );
+    saveGame();
+  }
 }
 
 function findNearbyNPC() {
@@ -188,6 +281,7 @@ function checkInteraction() {
       m.golden_egg.eggReturned = true;
       SFX.missionComplete();
       player.xp += 50;
+      player.coins += 20;
       player.inventory.push('Omelet Recept');
       startDialog([
         { speaker: 'Noedels', text: 'Hier Kip, het Gouden Ei! Terug waar het hoort.' },
@@ -209,10 +303,23 @@ function checkInteraction() {
       return;
     }
     if (m.golden_egg.state === 'completed') {
-      startDialog([
-        { speaker: 'Noedels', text: 'Het Gouden Ei ligt veilig in het nest. Kip ziet er tevreden uit.' },
-        { speaker: 'De Kip', text: '*tok*' },
-      ]);
+      // Check if player has any eggs to place
+      const eggItems = player.inventory.filter(item =>
+        item === 'Kippenei' || item === 'Groot Broedei' || item === 'Gouden Broedei'
+      );
+      if (eggItems.length > 0) {
+        openCoopEggPlacement(eggItems);
+      } else {
+        const hatchCount = hatchingEggs.length;
+        const chickenCount = hatchedChickens.length;
+        let statusText = 'Het Gouden Ei ligt veilig in het nest.';
+        if (hatchCount > 0) statusText += ` Er broeden ${hatchCount} eieren.`;
+        if (chickenCount > 0) statusText += ` ${chickenCount} kippen lopen rond!`;
+        startDialog([
+          { speaker: 'Noedels', text: statusText },
+          { speaker: 'De Kip', text: '*tok*' },
+        ]);
+      }
     } else if (distToCoop < 3) {
       startDialog([
         { speaker: 'Noedels', text: 'Het kippenhok. Ruikt naar... kip.' },

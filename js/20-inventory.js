@@ -52,6 +52,27 @@ function drawInventory() {
         ctx.beginPath();
         ctx.ellipse(bx+50, by+75+i*30, 10, 7, 0, 0, Math.PI*2);
         ctx.fill();
+      } else if (item === 'Kippenei') {
+        ctx.fillStyle = EGG_TYPES.kippenei.color;
+        ctx.beginPath();
+        ctx.ellipse(bx+50, by+75+i*30, 6, 8, 0, 0, Math.PI*2);
+        ctx.fill();
+      } else if (item === 'Groot Broedei') {
+        ctx.fillStyle = EGG_TYPES.groot_ei.color;
+        ctx.beginPath();
+        ctx.ellipse(bx+50, by+75+i*30, 7, 9, 0, 0, Math.PI*2);
+        ctx.fill();
+      } else if (item === 'Gouden Broedei') {
+        ctx.fillStyle = EGG_TYPES.gouden_ei.color;
+        ctx.beginPath();
+        ctx.ellipse(bx+50, by+75+i*30, 7, 9, 0, 0, Math.PI*2);
+        ctx.fill();
+        // Glitter
+        const sparkle = Math.sin(gameTick * 0.1 + i) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255,255,200,${sparkle})`;
+        ctx.beginPath();
+        ctx.arc(bx+54, by+70+i*30, 2, 0, Math.PI*2);
+        ctx.fill();
       }
       ctx.fillStyle = '#fff';
       ctx.font = '15px monospace';
@@ -63,8 +84,9 @@ function drawInventory() {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#888';
   ctx.font = '12px monospace';
-  ctx.fillText(`Level: ${player.level} | XP: ${player.xp} | HP: ${player.hp}/${player.maxHp}`, w/2, by+boxH-55);
-  ctx.fillText(`Missies voltooid: ${[missions.golden_egg, missions.catch_fish, missions.fix_invention, missions.recipe_search].filter(m=>m.state==='completed').length}/4`, w/2, by+boxH-35);
+  ctx.fillText(`Level: ${player.level} | XP: ${player.xp} | HP: ${player.hp}/${player.maxHp} | Munten: ${player.coins}`, w/2, by+boxH-55);
+  const missionsDone = [missions.golden_egg, missions.catch_fish, missions.fix_invention, missions.recipe_search].filter(m=>m.state==='completed').length;
+  ctx.fillText(`Missies: ${missionsDone}/4 | Kippen: ${hatchedChickens.length} | Broedend: ${hatchingEggs.length}`, w/2, by+boxH-35);
   ctx.fillText('Druk ESC, I of TAS om te sluiten', w/2, by+boxH-15);
   ctx.textAlign = 'left';
 }

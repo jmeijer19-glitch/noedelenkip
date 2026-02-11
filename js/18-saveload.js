@@ -1,7 +1,7 @@
 // --- SAVE / LOAD ---
 function saveGame() {
   const save = {
-    player: { x:player.x, y:player.y, dir:player.dir, hp:player.hp, maxHp:player.maxHp, xp:player.xp, level:player.level, inventory:player.inventory, talkedTo:player.talkedTo, speed:player.speed },
+    player: { x:player.x, y:player.y, dir:player.dir, hp:player.hp, maxHp:player.maxHp, xp:player.xp, level:player.level, inventory:player.inventory, talkedTo:player.talkedTo, speed:player.speed, coins:player.coins },
     missions: JSON.parse(JSON.stringify(missions)),
     currentMission,
     kipPos: { x:kip.x, y:kip.y },
@@ -12,6 +12,8 @@ function saveGame() {
     mistFirstSeen: mistState.firstSeen,
     mistEnteredForest: mistState.enteredForest,
     moos: { x: moos.x, y: moos.y, met: moos.met, following: moos.following },
+    hatchingEggs: hatchingEggs.map(e => ({ type: e.type, startTime: e.startTime, hatchTime: e.hatchTime })),
+    hatchedChickens: hatchedChickens.map(c => ({ type: c.type, x: c.x, y: c.y, color: c.color })),
   };
   localStorage.setItem('noedels_save_v2', JSON.stringify(save));
   hasSave = true;
@@ -36,6 +38,29 @@ function loadGame() {
     if (save.moos) {
       moos.x = save.moos.x; moos.y = save.moos.y;
       moos.met = save.moos.met; moos.following = save.moos.following;
+    }
+    // Restore coins
+    if (save.player.coins !== undefined) player.coins = save.player.coins;
+    // Restore hatching eggs (timers persist via startTime)
+    if (save.hatchingEggs) {
+      hatchingEggs = save.hatchingEggs.map(e => ({
+        type: e.type, startTime: e.startTime, hatchTime: e.hatchTime
+      }));
+    } else {
+      hatchingEggs = [];
+    }
+    // Restore hatched chickens
+    if (save.hatchedChickens) {
+      hatchedChickens = save.hatchedChickens.map(c => ({
+        type: c.type, x: c.x, y: c.y,
+        dir: Math.floor(Math.random() * 4),
+        frame: Math.random() * 100,
+        wanderAngle: Math.random() * Math.PI * 2,
+        wanderTimer: 0,
+        color: c.color,
+      }));
+    } else {
+      hatchedChickens = [];
     }
 
     // Restore NPC markers
