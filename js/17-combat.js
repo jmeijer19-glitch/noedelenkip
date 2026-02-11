@@ -28,8 +28,8 @@ function playerAttack() {
         SFX.enemyDie();
         checkLevelUp();
 
-        // Drop coins
-        const coinDrop = 3 + Math.floor(Math.random() * 7); // 3-9 coins
+        // Drop coins: 1 per kip, 2 per vos/ander beest
+        const coinDrop = e.type === 'wild_chicken' ? 1 : 2;
         player.coins += coinDrop;
         SFX.coin();
         // Spawn coin particles
