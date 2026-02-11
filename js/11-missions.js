@@ -130,3 +130,9 @@ for (let i=0;i<8;i++) clouds.push({ x: Math.random()*MAP_W*T, y: Math.random()*M
 let titleTick = 0;
 let titleClouds = [];
 for (let i=0;i<6;i++) titleClouds.push({ x: Math.random()*canvas.width, y: 50+Math.random()*150, w: 60+Math.random()*80, speed: 0.3+Math.random()*0.4 });
+
+// Title screen weather variants
+const TITLE_VARIANTS = ['regen', 'zon', 'wind', 'herfst', 'sneeuw', 'nacht', 'regenboog'];
+let titleVariant = TITLE_VARIANTS[Math.floor(Math.random() * TITLE_VARIANTS.length)];
+let titleParticles = [];
+let titleParticlesInit = false;
