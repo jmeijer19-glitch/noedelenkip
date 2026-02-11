@@ -168,7 +168,8 @@ function drawTitleScreen() {
   ctx.fillStyle = 'rgba(255,255,255,0.5)';
   ctx.font = '13px monospace';
   ctx.textAlign = 'center';
-  ctx.fillText('WASD/Pijltjes = Bewegen | Enter/Spatie = Actie | X = Aanval | I = Tas | Esc = Menu', w/2, h-15);
+  const isMobile = matchMedia('(pointer:coarse)').matches;
+  ctx.fillText(isMobile ? 'Tik op een optie om te kiezen' : 'WASD/Pijltjes = Bewegen | Enter/Spatie = Actie | X = Aanval | I = Tas | Esc = Menu', w/2, h-15);
   ctx.textAlign = 'left';
 }
 
@@ -187,10 +188,40 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 let titleInputCooldown = 0;
+let titleTapSelection = -1;
+
+// Touch tap support for title menu
+canvas.addEventListener('touchstart', function(e) {
+  if (gameState !== 'title') return;
+  const touch = e.changedTouches[0];
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const tx = (touch.clientX - rect.left) * scaleX;
+  const ty = (touch.clientY - rect.top) * scaleY;
+  const menuY = canvas.height * 0.35;
+  const menuSpacing = 40;
+  for (let i = 0; i < titleOptions.length; i++) {
+    const oy = menuY + i * menuSpacing + 10;
+    if (tx > canvas.width/2 - 130 && tx < canvas.width/2 + 130 && ty > oy - 14 && ty < oy + 18) {
+      titleTapSelection = i;
+      break;
+    }
+  }
+}, { passive: true });
+
 function updateTitle() {
   if (titleInputCooldown > 0) { titleInputCooldown--; return; }
   if (isDown('up')) { titleSelection = (titleSelection - 1 + titleOptions.length) % titleOptions.length; SFX.menuMove(); titleInputCooldown = 12; }
   if (isDown('down')) { titleSelection = (titleSelection + 1) % titleOptions.length; SFX.menuMove(); titleInputCooldown = 12; }
+
+  // Handle touch tap on menu items
+  if (titleTapSelection >= 0) {
+    titleSelection = titleTapSelection;
+    titleTapSelection = -1;
+    confirmJust = true; // trigger as confirm
+  }
+
   if (confirmJust) {
     if (audioCtx.state === 'suspended') audioCtx.resume();
     if (titleSelection === 0) {

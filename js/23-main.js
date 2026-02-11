@@ -33,6 +33,12 @@ function gameLoop(timestamp) {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Hide touch controls on non-gameplay screens
+  const showTouch = (gameState === 'playing' || gameState === 'dialog' || gameState === 'inventory' || gameState === 'paused' || gameState === 'mist_cutscene');
+  if (joystickZone) joystickZone.style.display = showTouch && matchMedia('(pointer:coarse)').matches ? 'block' : 'none';
+  const touchBtns = document.getElementById('touch-buttons');
+  if (touchBtns) touchBtns.style.display = showTouch && matchMedia('(pointer:coarse)').matches ? 'block' : 'none';
+
   switch(gameState) {
     case 'title':
       updateTitle();
