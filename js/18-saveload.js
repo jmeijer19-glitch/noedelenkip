@@ -13,7 +13,7 @@ function saveGame() {
     mistEnteredForest: mistState.enteredForest,
     moos: { x: moos.x, y: moos.y, met: moos.met, following: moos.following },
     hatchingEggs: hatchingEggs.map(e => ({ type: e.type, startTime: e.startTime, hatchTime: e.hatchTime })),
-    hatchedChickens: hatchedChickens.map(c => ({ type: c.type, x: c.x, y: c.y, color: c.color })),
+    hatchedChickens: hatchedChickens.map(c => ({ type: c.type, x: c.x, y: c.y, color: c.color, birthTime: c.birthTime })),
   };
   localStorage.setItem('noedels_save_v2', JSON.stringify(save));
   hasSave = true;
@@ -58,6 +58,7 @@ function loadGame() {
         wanderAngle: Math.random() * Math.PI * 2,
         wanderTimer: 0,
         color: c.color,
+        birthTime: c.birthTime || (Date.now() - 120000), // fallback: already grown
       }));
     } else {
       hatchedChickens = [];

@@ -175,7 +175,9 @@ function drawWorld() {
       drawEnemy(enemies[s.idx]);
     } else if (s.type === 'coopchicken') {
       const chick = hatchedChickens[s.idx];
-      drawCoopChicken(chick.x, chick.y, chick.dir, chick.frame * 3, chick.color, chick.type === 'gouden_ei');
+      const age = (Date.now() - chick.birthTime) / 1000; // seconds since birth
+      const growth = Math.min(1, age / 120); // fully grown after 120 seconds
+      drawCoopChicken(chick.x, chick.y, chick.dir, chick.frame * 3, chick.color, chick.type === 'gouden_ei', growth);
     }
   });
 

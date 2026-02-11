@@ -154,8 +154,10 @@ function drawKip(x, y, dir, frame, scale=1, flutter=false) {
 }
 
 // --- DRAW COOP CHICKEN (small chickens in the coop) ---
-function drawCoopChicken(x, y, dir, frame, chickenColor, isGolden) {
-  const s = 0.6; // smaller than De Kip
+// growth: 0 = just hatched (tiny chick), 1 = fully grown
+function drawCoopChicken(x, y, dir, frame, chickenColor, isGolden, growth) {
+  // Scale: chick starts at 0.25, grows to 0.6
+  const s = 0.25 + growth * 0.35;
   ctx.save();
   ctx.translate(Math.floor(x), Math.floor(y));
 
@@ -166,51 +168,74 @@ function drawCoopChicken(x, y, dir, frame, chickenColor, isGolden) {
   ctx.fill();
 
   const bob = Math.sin(frame * 0.5) * s;
+  // Baby chicks bob faster
+  const chickBob = growth < 0.5 ? Math.sin(frame * 0.8) * s * 1.5 : bob;
 
   // Legs
   ctx.fillStyle = '#d4a020';
-  ctx.fillRect(-2*s, 3*s+bob, 1.5*s, 3*s);
-  ctx.fillRect(0.5*s, 3*s+bob, 1.5*s, 3*s);
+  ctx.fillRect(-2*s, 3*s+chickBob, 1.5*s, 3*s);
+  ctx.fillRect(0.5*s, 3*s+chickBob, 1.5*s, 3*s);
 
-  // Body
-  ctx.fillStyle = chickenColor;
-  ctx.beginPath();
-  ctx.ellipse(0, 0+bob, 5*s, 4*s, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // Wings
-  ctx.fillStyle = chickenColor === '#ffd700' ? '#e6c200' : '#d8d0c0';
-  ctx.fillRect(-5*s, -0.5*s+bob, 2*s, 3*s);
-  ctx.fillRect(3*s, -0.5*s+bob, 2*s, 3*s);
-
-  // Head
-  ctx.fillStyle = chickenColor;
-  ctx.beginPath();
-  ctx.ellipse(0, -5*s+bob, 3.5*s, 3.5*s, 0, 0, Math.PI*2);
-  ctx.fill();
-
-  // Comb
-  ctx.fillStyle = '#cc3333';
-  ctx.fillRect(-1*s, -9*s+bob, 1.5*s, 2*s);
-  ctx.fillRect(0.5*s, -10*s+bob, 1.5*s, 3*s);
-
-  // Beak
-  ctx.fillStyle = '#dda030';
-  ctx.fillRect(2*s, -6*s+bob, 3*s, 2*s);
-
-  // Eye
-  ctx.fillStyle = '#222';
-  ctx.fillRect(1*s, -6.5*s+bob, 1.5*s, 1.5*s);
+  if (growth < 0.4) {
+    // --- BABY CHICK: round fluffy ball ---
+    // Fluffy body (rounder, yellow-ish)
+    const babyColor = chickenColor === '#ffd700' ? '#ffe44d' : '#f5e880';
+    ctx.fillStyle = babyColor;
+    ctx.beginPath();
+    ctx.ellipse(0, -1+chickBob, 5*s, 5*s, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Tiny beak
+    ctx.fillStyle = '#dda030';
+    ctx.fillRect(3*s, -2*s+chickBob, 2.5*s, 1.5*s);
+    // Dot eyes (bigger relative to head)
+    ctx.fillStyle = '#222';
+    ctx.beginPath();
+    ctx.arc(1.5*s, -2.5*s+chickBob, 1*s, 0, Math.PI*2);
+    ctx.fill();
+    // Tiny wing fluff
+    ctx.fillStyle = babyColor === '#ffe44d' ? '#ffd200' : '#e8d860';
+    ctx.fillRect(-5*s, -1*s+chickBob, 2*s, 2.5*s);
+    ctx.fillRect(3*s, -1*s+chickBob, 2*s, 2.5*s);
+  } else {
+    // --- GROWING / ADULT CHICKEN ---
+    // Body
+    ctx.fillStyle = chickenColor;
+    ctx.beginPath();
+    ctx.ellipse(0, 0+bob, 5*s, 4*s, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Wings
+    ctx.fillStyle = chickenColor === '#ffd700' ? '#e6c200' : '#d8d0c0';
+    ctx.fillRect(-5*s, -0.5*s+bob, 2*s, 3*s);
+    ctx.fillRect(3*s, -0.5*s+bob, 2*s, 3*s);
+    // Head
+    ctx.fillStyle = chickenColor;
+    ctx.beginPath();
+    ctx.ellipse(0, -5*s+bob, 3.5*s, 3.5*s, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Comb (grows with age)
+    const combScale = Math.max(0, (growth - 0.4) / 0.6); // 0 at 0.4, 1 at 1.0
+    if (combScale > 0.1) {
+      ctx.fillStyle = '#cc3333';
+      ctx.fillRect(-1*s, (-9-combScale)*s+bob, 1.5*s, 2*combScale*s);
+      ctx.fillRect(0.5*s, (-10-combScale)*s+bob, 1.5*s, 3*combScale*s);
+    }
+    // Beak
+    ctx.fillStyle = '#dda030';
+    ctx.fillRect(2*s, -6*s+bob, 3*s, 2*s);
+    // Eye
+    ctx.fillStyle = '#222';
+    ctx.fillRect(1*s, -6.5*s+bob, 1.5*s, 1.5*s);
+  }
 
   // Golden glitter effect
   if (isGolden) {
     const sparkle = Math.sin(frame * 0.3 + x) * 0.5 + 0.5;
     ctx.fillStyle = `rgba(255,255,150,${sparkle * 0.6})`;
     ctx.beginPath();
-    ctx.arc(Math.sin(frame*0.7)*3, -3+bob+Math.cos(frame*0.5)*2, 2, 0, Math.PI*2);
+    ctx.arc(Math.sin(frame*0.7)*3, -3*s+chickBob+Math.cos(frame*0.5)*2, 1.5+s, 0, Math.PI*2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(Math.cos(frame*0.4)*4, bob+Math.sin(frame*0.6)*3, 1.5, 0, Math.PI*2);
+    ctx.arc(Math.cos(frame*0.4)*4, chickBob+Math.sin(frame*0.6)*3, 1+s, 0, Math.PI*2);
     ctx.fill();
   }
 

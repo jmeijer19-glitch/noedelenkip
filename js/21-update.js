@@ -248,6 +248,7 @@ function updateHatching() {
         wanderAngle: Math.random() * Math.PI * 2,
         wanderTimer: 0,
         color: eggType.chickenColor,
+        birthTime: Date.now(),
       });
       hatchingEggs.splice(i, 1);
       SFX.hatch();
