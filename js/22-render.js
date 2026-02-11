@@ -507,29 +507,34 @@ function drawHUD() {
   ctx.font = '9px monospace';
   ctx.fillText(`${player.hp}/${player.maxHp}`, 110, 31);
 
-  // Level + XP + Coins
+  // Level + XP
   ctx.fillStyle = C.uiBorder;
   ctx.font = '11px monospace';
   ctx.fillText(`Lv.${player.level}`, 68, 50);
   ctx.fillStyle = '#aaa';
   ctx.font = '10px monospace';
   ctx.fillText(`XP:${player.xp}`, 110, 50);
-  // Coin icon + count
+  // Time of day (right-aligned in HUD box)
+  ctx.fillStyle = 'rgba(255,255,255,0.6)';
+  ctx.font = '9px monospace';
+  ctx.textAlign = 'right';
+  ctx.fillText(dayNight.getLabel(), 205, 50);
+  ctx.textAlign = 'left';
+
+  // Coin display (below portrait box)
+  ctx.fillStyle = 'rgba(20,20,40,0.7)';
+  roundRect(ctx, 10, 70, 70, 20, 5);
+  ctx.fill();
   ctx.fillStyle = '#ffd700';
   ctx.beginPath();
-  ctx.arc(163, 47, 5, 0, Math.PI*2);
+  ctx.arc(24, 80, 5, 0, Math.PI*2);
   ctx.fill();
   ctx.fillStyle = '#b8960a';
   ctx.font = 'bold 6px monospace';
-  ctx.fillText('$', 161, 49);
+  ctx.fillText('$', 22, 82);
   ctx.fillStyle = '#ffd700';
-  ctx.font = '10px monospace';
-  ctx.fillText(`${player.coins}`, 172, 50);
-
-  // Time of day
-  ctx.fillStyle = 'rgba(255,255,255,0.6)';
-  ctx.font = '9px monospace';
-  ctx.fillText(dayNight.getLabel(), 170, 50);
+  ctx.font = '11px monospace';
+  ctx.fillText(`${player.coins}`, 33, 84);
 
   // === MISSION TRACKER (top-center) ===
   {

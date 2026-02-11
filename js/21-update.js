@@ -251,7 +251,11 @@ function updateHatching() {
       });
       hatchingEggs.splice(i, 1);
       SFX.hatch();
-      setMissionBar(`Een ${eggType.name} is uitgebroed! Er loopt een nieuw kuiken in het hok!`);
+      // XP reward based on egg type
+      const xpReward = egg.type === 'gouden_ei' ? 30 : egg.type === 'groot_ei' ? 15 : 5;
+      player.xp += xpReward;
+      checkLevelUp();
+      setMissionBar(`Een ${eggType.name} is uitgebroed! +${xpReward} XP! Er loopt een nieuw kuiken in het hok!`);
       setTimeout(() => { missionBarTarget = 0; }, 4000);
       saveGame();
     }
