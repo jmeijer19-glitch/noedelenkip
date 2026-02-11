@@ -76,8 +76,9 @@ function updateDialog() {
 function drawDialog() {
   if (dialogIndex >= dialogQueue.length) return;
   const line = dialogQueue[dialogIndex];
+  const isMobile = matchMedia('(pointer:coarse)').matches || canvas.width < 900;
   const boxH = 120;
-  const boxY = canvas.height - boxH - 20;
+  const boxY = isMobile ? canvas.height - boxH - 180 : canvas.height - boxH - 20;
   const boxX = 20;
   const boxW = canvas.width - 40;
 
